@@ -73,6 +73,7 @@ def list_anomalies(
     severity: Optional[str] = Query(None),
     limit: int = Query(100),
 ):
+    if _anomalies is None: return []
     df = _anomalies.copy()
     if provider:
         df = df[df["provider"] == provider]
@@ -86,19 +87,21 @@ def list_anomalies(
 
 @router.get("/metrics")
 def detection_metrics():
+    if _anomalies is None: return {}
     from detection.ensemble import compute_metrics
     return compute_metrics(_anomalies)
 
 
 @router.get("/recent")
 def recent_anomalies(limit: int = 10):
+    if _anomalies is None: return []
     df = _anomalies.sort_values(["date", "severity_score"], ascending=[False, False]).head(limit)
     return _serialize(df)
 
 
 @router.get("/by-type")
 def anomalies_by_type():
-    if "type_label" not in _anomalies.columns:
+    if _anomalies is None or "type_label" not in _anomalies.columns:
         return []
     counts = _anomalies.groupby("type_label").agg(
         count=("severity_score", "count"),

@@ -5,7 +5,7 @@ from typing import Optional
 
 router = APIRouter(prefix="/api/forecasts", tags=["forecasts"])
 
-_forecasts = None
+_forecasts = {}
 
 def set_forecasts(forecasts: dict):
     global _forecasts
