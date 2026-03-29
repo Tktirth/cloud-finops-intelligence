@@ -84,6 +84,15 @@ def list_anomalies(
     df = df.sort_values(["date", "severity_score"], ascending=[False, False]).head(limit)
     return _serialize(df)
 
+@router.get("/debug")
+def debug_anom():
+    return {
+        "is_none": _anomalies is None,
+        "type": str(type(_anomalies)),
+        "empty": _anomalies.empty if _anomalies is not None else True,
+        "len": len(_anomalies) if _anomalies is not None else 0
+    }
+
 
 @router.get("/metrics")
 def detection_metrics():

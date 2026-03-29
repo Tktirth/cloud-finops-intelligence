@@ -31,30 +31,26 @@ app.add_middleware(
 import asyncio
 
 _ml_error = None
+_ml_step = "Initialized"
 
 async def run_ml_pipeline():
-    global _ml_error
+    global _ml_error, _ml_step
     try:
-        print("\n" + "="*60)
-        print("🚀 Cloud FinOps Intelligence — Starting ML Pipeline")
-        print("="*60)
-
-        # 1. Load data
+        _ml_step = "Step 1: Loading ML Data"
         from data.db import get_store
         store = await asyncio.to_thread(get_store)
-
         from routers.overview import set_store
         set_store(store)
 
-        # 2. Statistical detection
+        _ml_step = "Step 2: Statistical Anomaly Detection"
         from detection.statistical import run_statistical_detection
         stat_df = await asyncio.to_thread(run_statistical_detection, store.daily)
 
-        # 3. ML detection
+        _ml_step = "Step 3: Classic ML (Isolation Forest)"
         from detection.ml_models import run_ml_detection
         ml_df = await asyncio.to_thread(run_ml_detection, store.daily, 0.03)
 
-        # 4. Deep learning detection
+        _ml_step = "Step 4: Deep Learning (LSTM Autoencoders)"
         from detection.deep_learning import run_dl_detection
         dl_input = store.full.groupby(["date", "provider", "service", "category", "team", "environment"]).agg(
             cost_usd=("cost_usd", "sum"),
@@ -68,32 +64,30 @@ async def run_ml_pipeline():
         dl_df["is_dl_anomaly"] = dl_df["is_dl_anomaly"].fillna(False).astype(bool)
         dl_df["dl_score"] = dl_df["dl_score"].fillna(0.0)
 
-        # 5. Ensemble
+        _ml_step = "Step 5: Ensemble Aggregation"
         from detection.ensemble import run_ensemble
         from attribution.root_cause import run_attribution
         anomalies_df = await asyncio.to_thread(run_ensemble, stat_df, ml_df, dl_df)
         anomalies_df = await asyncio.to_thread(run_attribution, store.daily, anomalies_df)
-
         from routers.anomalies import set_anomalies
         set_anomalies(anomalies_df)
 
-        # 6. Forecasting
+        _ml_step = "Step 6: Real-time Forecasting (Prophet+LightGBM)"
         from forecasting.ensemble import run_ensemble_forecasts
         forecast_daily_df = store.full.groupby(["date", "provider", "team", "environment"])["cost_usd"].sum().reset_index()
         forecasts = await asyncio.to_thread(run_ensemble_forecasts, forecast_daily_df)
-
         from routers.forecasts import set_forecasts
         set_forecasts(forecasts)
 
-        # 7. Budget breach prediction & alerts
+        _ml_step = "Step 7: Alerts & Breach Prediction"
         from alerts.engine import generate_alerts, predict_budget_breach
         alert_list = await asyncio.to_thread(generate_alerts, anomalies_df)
         breach_data = await asyncio.to_thread(predict_budget_breach, store.daily, forecasts)
-
         from routers.budgets_alerts import set_alert_data, set_budget_data
         set_alert_data(alert_list)
         set_budget_data(breach_data)
 
+        _ml_step = "Completed Successfully"
         print(f"\n✅ Pipeline complete!")
     except Exception as e:
         import traceback
@@ -108,7 +102,7 @@ async def startup_event():
 
 @app.get("/api/debug-ml")
 def debug_ml():
-    return {"error": _ml_error}
+    return {"status": _ml_step, "error": _ml_error}
 
 
 # ─────────────────────────────────────────────
