@@ -68,7 +68,16 @@ async def run_ml_pipeline():
         _ml_step = "Step 6: Real-time Forecasting (LightGBM-Only for Free Tier Memory)"
         # Bypass Prophet completely to save OS thread-level recompilation memory
         from forecasting.lgbm_model import run_lgbm_forecasts
-        forecasts = await asyncio.to_thread(run_lgbm_forecasts, store.daily)
+        forecasts_raw = await asyncio.to_thread(run_lgbm_forecasts, store.daily)
+        
+        # Package identically to what the ensemble API contract expects
+        forecasts = {}
+        import pandas as pd
+        for k, df in forecasts_raw.items():
+            if isinstance(df, pd.DataFrame) and not df.empty:
+                forecasts[k] = {"forecast": df.to_dict(orient="records"), "metrics": {"model": "lgbm_only"}}
+            else:
+                forecasts[k] = {"forecast": [], "metrics": {}}
         from routers.forecasts import set_forecasts
         set_forecasts(forecasts)
 
