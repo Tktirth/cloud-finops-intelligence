@@ -66,7 +66,7 @@ async def run_ml_pipeline():
         anomaly_id=("anomaly_id", lambda x: x.dropna().iloc[0] if x.dropna().any() else None),
     ).reset_index()
     dl_input["resource_key"] = dl_input["provider"] + "/" + dl_input["service"] + "/" + dl_input["team"] + "/" + dl_input["environment"]
-    dl_df_agg = await asyncio.to_thread(run_dl_detection, dl_input, 10)
+    dl_df_agg = await asyncio.to_thread(run_dl_detection, dl_input, 3)
     # Map DL flags back to full daily_df by resource_key
     dl_flags = dl_df_agg[["date", "resource_key", "is_dl_anomaly", "dl_score"]].copy()
     dl_df = store.daily.merge(dl_flags, on=["date", "resource_key"], how="left")

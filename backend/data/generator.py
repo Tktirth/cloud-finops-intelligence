@@ -261,7 +261,7 @@ def load_or_generate() -> pd.DataFrame:
     cache_path = os.path.join(os.path.dirname(__file__), "raw", "billing_data.parquet")
     if os.path.exists(cache_path):
         return pd.read_parquet(cache_path)
-    df = generate_billing_data(180)
+    df = generate_billing_data(90)
     save_data(df, os.path.join(os.path.dirname(__file__), "raw"))
     return df
 
