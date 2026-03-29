@@ -16,15 +16,25 @@ export function useApi(fn, deps = []) {
   return { data, loading, error }
 }
 
-export function usePolling(fn, intervalMs = 30000, deps = []) {
+export function usePolling(fn, deps = [], intervalMs = 30000) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetch = () => fn().then(setData).catch(console.error).finally(() => setLoading(false))
+    let isMounted = true;
+    const fetch = () => {
+      fn().then(res => {
+        if (isMounted) setData(res);
+      }).catch(console.error).finally(() => {
+        if (isMounted) setLoading(false);
+      })
+    }
     fetch()
     const interval = setInterval(fetch, intervalMs)
-    return () => clearInterval(interval)
+    return () => {
+      isMounted = false;
+      clearInterval(interval)
+    }
   }, deps)
 
   return { data, loading }
