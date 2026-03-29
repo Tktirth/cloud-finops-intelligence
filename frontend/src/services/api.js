@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+const baseURL = import.meta.env.VITE_API_URL || '/api'
+const api = axios.create({ baseURL })
 
 export const getOverviewSummary = () => api.get('/overview/summary').then(r => r.data)
 export const getSpendTimeline = () => api.get('/overview/spend-timeline').then(r => r.data)
