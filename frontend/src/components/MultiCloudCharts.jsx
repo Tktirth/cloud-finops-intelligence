@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Brush,
   ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell
 } from 'recharts'
 import { usePolling } from '../hooks/useApi'
@@ -49,6 +49,7 @@ export function SpendTimeline() {
         <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
         <Tooltip content={<SpendTooltip />} />
         <Area type="monotone" dataKey="cost" stroke="#6C63FF" fill="url(#costGrad)" strokeWidth={2} dot={false} />
+        <Brush dataKey="date" height={25} stroke="#8B9BC8" fill="rgba(255,255,255,0.05)" />
       </AreaChart>
     </ResponsiveContainer>
   )
@@ -78,7 +79,8 @@ export function ProviderSpendChart() {
         {Object.entries(PROVIDER_COLORS).map(([p, c]) => (
           <Bar key={p} dataKey={p} stackId="a" fill={c} radius={p === 'gcp' ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
         ))}
-        <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v.toUpperCase()}</span>} />
+        <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v.toUpperCase()}</span>} verticalAlign="top" height={36} />
+        <Brush dataKey="date" height={25} stroke="#8B9BC8" fill="rgba(255,255,255,0.05)" />
       </BarChart>
     </ResponsiveContainer>
   )

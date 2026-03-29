@@ -178,6 +178,8 @@ html, body, #root {
   background: rgba(7,11,20,0.9);
   backdrop-filter: blur(20px);
   flex-shrink: 0;
+  position: relative;
+  z-index: 2000;
 }
 .header-title { font-size: 18px; font-weight: 700; }
 .header-pill {

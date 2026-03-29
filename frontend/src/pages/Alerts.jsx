@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { usePolling } from '../hooks/useApi'
 import { getAlerts, getAlertsSummary } from '../services/api'
 import { Bell, AlertTriangle, AlertCircle, Info, CheckCircle } from 'lucide-react'
@@ -10,7 +11,7 @@ const SEVERITY_ICONS = {
   LOW: <CheckCircle size={14} color="var(--low)" />,
 }
 
-const CONFIGURED_RULES = [
+const INITIAL_RULES = [
   { name: 'Compute Spike Alert', condition: 'Compute cost > 3× 7-day rolling mean', severity: 'CRITICAL', providers: ['aws', 'azure', 'gcp'], enabled: true },
   { name: 'Storage Drift Alert', condition: 'Storage cost trending up > 5% daily for 7 days', severity: 'HIGH', providers: ['gcp', 'azure'], enabled: true },
   { name: 'Egress Blast Alert', condition: 'Networking cost > 5× daily average', severity: 'CRITICAL', providers: ['aws', 'azure', 'gcp'], enabled: true },
@@ -19,6 +20,7 @@ const CONFIGURED_RULES = [
 ]
 
 export default function Alerts() {
+  const [rules, setRules] = useState(INITIAL_RULES)
   const { data: alerts, loading } = usePolling(getAlerts, [])
   const { data: summary } = usePolling(getAlertsSummary, [])
 
@@ -86,7 +88,7 @@ export default function Alerts() {
         <div>
           <div className="section-title">Configured Alert Rules</div>
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {CONFIGURED_RULES.map((rule, i) => (
+            {rules.map((rule, i) => (
               <div key={i} style={{
                 padding: '16px', borderBottom: '1px solid var(--glass-border)',
                 opacity: rule.enabled ? 1 : 0.5,
@@ -98,11 +100,17 @@ export default function Alerts() {
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     <span className={`anomaly-badge badge-${rule.severity}`}>{rule.severity}</span>
-                    <div style={{
-                      width: 32, height: 18, borderRadius: 9,
-                      background: rule.enabled ? 'var(--low)' : 'var(--text-muted)',
-                      position: 'relative', cursor: 'pointer', transition: 'background 0.2s',
-                    }}>
+                    <div 
+                      onClick={() => {
+                        const next = [...rules]
+                        next[i].enabled = !next[i].enabled
+                        setRules(next)
+                      }}
+                      style={{
+                        width: 32, height: 18, borderRadius: 9,
+                        background: rule.enabled ? 'var(--low)' : 'var(--text-muted)',
+                        position: 'relative', cursor: 'pointer', transition: 'background 0.2s',
+                      }}>
                       <div style={{
                         width: 14, height: 14, borderRadius: '50%', background: '#fff',
                         position: 'absolute', top: 2, left: rule.enabled ? 16 : 2, transition: 'left 0.2s',
