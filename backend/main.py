@@ -50,19 +50,12 @@ async def run_ml_pipeline():
         from detection.ml_models import run_ml_detection
         ml_df = await asyncio.to_thread(run_ml_detection, store.daily, 0.03)
 
-        _ml_step = "Step 4: Deep Learning (LSTM Autoencoders)"
-        from detection.deep_learning import run_dl_detection
-        dl_input = store.full.groupby(["date", "provider", "service", "category", "team", "environment"]).agg(
-            cost_usd=("cost_usd", "sum"),
-            is_anomaly=("is_anomaly", "max"),
-            anomaly_id=("anomaly_id", lambda x: x.dropna().iloc[0] if x.dropna().any() else None),
-        ).reset_index()
-        dl_input["resource_key"] = dl_input["provider"] + "/" + dl_input["service"] + "/" + dl_input["team"] + "/" + dl_input["environment"]
-        dl_df_agg = await asyncio.to_thread(run_dl_detection, dl_input, 3)
-        dl_flags = dl_df_agg[["date", "resource_key", "is_dl_anomaly", "dl_score"]].copy()
-        dl_df = store.daily.merge(dl_flags, on=["date", "resource_key"], how="left")
-        dl_df["is_dl_anomaly"] = dl_df["is_dl_anomaly"].fillna(False).astype(bool)
-        dl_df["dl_score"] = dl_df["dl_score"].fillna(0.0)
+        _ml_step = "Step 4: Deep Learning (Bypassed for Free Tier Memory Limits)"
+        # We manually build a fake DL dataframe filled with False to keep the ensemble mathematically happy
+        # This completely avoids loading PyTorch binaries into the 512MB RAM ceiling
+        dl_df = store.daily.copy()
+        dl_df["is_dl_anomaly"] = False
+        dl_df["dl_score"] = 0.0
 
         _ml_step = "Step 5: Ensemble Aggregation"
         from detection.ensemble import run_ensemble
@@ -72,10 +65,10 @@ async def run_ml_pipeline():
         from routers.anomalies import set_anomalies
         set_anomalies(anomalies_df)
 
-        _ml_step = "Step 6: Real-time Forecasting (Prophet+LightGBM)"
-        from forecasting.ensemble import run_ensemble_forecasts
-        forecast_daily_df = store.full.groupby(["date", "provider", "team", "environment"])["cost_usd"].sum().reset_index()
-        forecasts = await asyncio.to_thread(run_ensemble_forecasts, forecast_daily_df)
+        _ml_step = "Step 6: Real-time Forecasting (LightGBM-Only for Free Tier Memory)"
+        # Bypass Prophet completely to save OS thread-level recompilation memory
+        from forecasting.lgbm_model import run_lgbm_forecasts
+        forecasts = await asyncio.to_thread(run_lgbm_forecasts, store.daily)
         from routers.forecasts import set_forecasts
         set_forecasts(forecasts)
 
