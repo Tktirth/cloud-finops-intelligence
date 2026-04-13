@@ -6,29 +6,15 @@ Orchestrates: data loading → anomaly detection → forecasting → attribution
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 
-app = FastAPI(
-    title="Cloud FinOps Intelligence API",
-    description="AI-Powered Multi-Cloud Cost Anomaly Detection & Spend Forecasting",
-    version="1.0.0",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # ─────────────────────────────────────────────
 # Startup: Run entire ML pipeline
 # ─────────────────────────────────────────────
-
-import asyncio
 
 _ml_error = None
 _ml_step = "Initialized"
@@ -72,7 +58,6 @@ async def run_ml_pipeline():
         
         # Package identically to what the ensemble API contract expects
         forecasts = {}
-        import pandas as pd
         for k, df in forecasts_raw.items():
             if isinstance(df, pd.DataFrame) and not df.empty:
                 forecasts[k] = {"forecast": df.to_dict(orient="records"), "metrics": {"model": "lgbm_only"}}
@@ -97,10 +82,27 @@ async def run_ml_pipeline():
         print("\n❌ PIPELINE CRASHED:", e)
         print(_ml_error)
 
-@app.on_event("startup")
-async def startup_event():
-    import asyncio
+@asynccontextmanager
+async def lifespan(app):
+    """Modern lifespan handler — replaces deprecated @app.on_event('startup')."""
     asyncio.create_task(run_ml_pipeline())
+    yield
+
+
+app = FastAPI(
+    title="Cloud FinOps Intelligence API",
+    description="AI-Powered Multi-Cloud Cost Anomaly Detection & Spend Forecasting",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/api/debug-ml")
 def debug_ml():
