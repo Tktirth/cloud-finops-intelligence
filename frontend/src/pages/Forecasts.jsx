@@ -1,11 +1,13 @@
 import { TotalForecastChart, ProviderForecastChart, TeamForecastChart } from '../components/ForecastChart'
 
+// Daily budget lines derived from backend TEAM_MONTHLY_BUDGETS (alerts/engine.py)
+// Monthly budgets: platform=$250K, data-eng=$190K, ml-ops=$135K, frontend=$125K, devops=$85K
 const TEAMS_BUDGETS = {
-  platform: 45000,
-  'data-engineering': 38000,
-  'ml-ops': 30000,
-  frontend: 22000,
-  devops: 15000,
+  platform: 250000,
+  'data-engineering': 190000,
+  'ml-ops': 135000,
+  frontend: 125000,
+  devops: 85000,
 }
 
 export default function Forecasts() {
