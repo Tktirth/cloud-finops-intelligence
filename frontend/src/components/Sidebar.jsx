@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, AlertTriangle, TrendingUp, DollarSign,
-  Bell, Activity, Cloud, Zap
+  Bell, Activity, Cloud, Zap, Loader
 } from 'lucide-react'
 import { usePolling } from '../hooks/useApi'
-import { getAlertsSummary } from '../services/api'
+import { getAlertsSummary, getMLStatus } from '../services/api'
 
 const NAV = [
   { section: 'OPERATIONS', items: [
@@ -21,6 +21,14 @@ const NAV = [
 export default function Sidebar() {
   const location = useLocation()
   const { data: alertsSummary } = usePolling(getAlertsSummary, [])
+  const { data: mlStatus } = usePolling(getMLStatus, [], 5000)
+
+  const pipelineReady = mlStatus?.status === 'Completed Successfully'
+  const pipelineError = !!mlStatus?.error
+  const statusColor = pipelineError ? 'var(--critical)' : pipelineReady ? 'var(--low)' : 'var(--medium)'
+  const statusBg = pipelineError ? 'rgba(255,61,87,0.08)' : pipelineReady ? 'rgba(6,214,160,0.08)' : 'rgba(255,209,102,0.08)'
+  const statusBorder = pipelineError ? 'rgba(255,61,87,0.2)' : pipelineReady ? 'rgba(6,214,160,0.2)' : 'rgba(255,209,102,0.2)'
+  const statusText = pipelineError ? 'Pipeline Error' : pipelineReady ? 'ML Pipeline Active' : (mlStatus?.status || 'Connecting...')
 
   return (
     <aside className="sidebar">
@@ -39,12 +47,17 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* Live Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '6px 10px', background: 'rgba(6,214,160,0.08)', borderRadius: 8, border: '1px solid rgba(6,214,160,0.2)' }}>
-          <div className="status-dot" />
-          <span style={{ fontSize: 11, color: 'var(--low)', fontWeight: 600 }}>ML Pipeline Active</span>
-          <Zap size={11} color="var(--low)" style={{ marginLeft: 'auto' }} />
+        {/* Live Status — connected to real pipeline */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '6px 10px', background: statusBg, borderRadius: 8, border: `1px solid ${statusBorder}` }}>
+          {pipelineReady ? <div className="status-dot" /> : <Loader size={11} color={statusColor} style={{ animation: 'spin 1.5s linear infinite' }} />}
+          <span style={{ fontSize: 11, color: statusColor, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{statusText}</span>
+          <Zap size={11} color={statusColor} style={{ flexShrink: 0 }} />
         </div>
+        {pipelineReady && mlStatus?.data_end && (
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, paddingLeft: 2 }}>
+            Data: {mlStatus.data_start} → {mlStatus.data_end}
+          </div>
+        )}
       </div>
 
       <nav className="sidebar-nav">

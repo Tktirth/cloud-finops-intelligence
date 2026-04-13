@@ -106,7 +106,18 @@ app.add_middleware(
 
 @app.get("/api/debug-ml")
 def debug_ml():
-    return {"status": _ml_step, "error": _ml_error}
+    from datetime import datetime
+    info = {"status": _ml_step, "error": _ml_error, "server_time": datetime.utcnow().isoformat()}
+    try:
+        from routers.overview import _store
+        if _store and hasattr(_store, 'daily'):
+            dates = _store.daily["date"]
+            info["data_start"] = str(dates.min().date())
+            info["data_end"] = str(dates.max().date())
+            info["total_records"] = len(_store.full)
+    except Exception:
+        pass
+    return info
 
 
 # ─────────────────────────────────────────────

@@ -27,4 +27,6 @@ export const getAlerts = (limit = 50) => api.get(`/alerts/?limit=${limit}`).then
 export const getCriticalAlerts = () => api.get('/alerts/critical').then(r => r.data)
 export const getAlertsSummary = () => api.get('/alerts/summary').then(r => r.data)
 
+export const getMLStatus = () => api.get('/debug-ml').then(r => r.data)
+
 export default api
