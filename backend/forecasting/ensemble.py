@@ -2,6 +2,10 @@
 Forecasting Ensemble
 Selects best model per segment via backtesting MAPE,
 then blends Prophet + LightGBM outputs.
+
+⚠️  WARNING: This module is BYPASSED in the production pipeline.
+    main.py calls lgbm_model.py directly. This ensemble requires
+    prophet_model.py which depends on prophet==1.1.5 (not installed).
 """
 
 import numpy as np

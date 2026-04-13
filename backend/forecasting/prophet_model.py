@@ -1,6 +1,12 @@
 """
 Prophet Forecasting Model
 Produces 7/30/90-day probabilistic forecasts per cost segment.
+
+⚠️  WARNING: This module is BYPASSED in the production pipeline.
+    main.py calls lgbm_model.py directly instead of the ensemble.
+    Prophet requires pystan/cmdstan compilation which exceeds the
+    512MB RAM limit on Render's free tier.
+    It requires: prophet==1.1.5 (not in requirements.txt).
 """
 
 import pandas as pd

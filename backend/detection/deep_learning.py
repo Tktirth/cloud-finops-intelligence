@@ -2,6 +2,12 @@
 Deep Learning Anomaly Detection — LSTM Autoencoder (PyTorch)
 Detects temporal cost anomalies by reconstructing sequences.
 High reconstruction error → anomaly.
+
+⚠️  WARNING: This module is BYPASSED in the production pipeline.
+    main.py creates a fake DL DataFrame instead of calling this module,
+    because PyTorch exceeds the 512MB RAM limit on Render's free tier.
+    This code is retained for reference and future use on beefier infra.
+    It requires: torch==2.3.0 (not in requirements.txt).
 """
 
 import numpy as np
