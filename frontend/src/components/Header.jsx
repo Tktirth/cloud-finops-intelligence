@@ -90,10 +90,10 @@ export default function Header({ onRefresh }) {
                   }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 11, fontWeight: 800, color: `var(--${alert.severity.toLowerCase()})`, background: `rgba(var(--${alert.severity.toLowerCase()}-rgb), 0.1)`, padding: '2px 6px', borderRadius: 4 }}>{alert.severity}</span>
-                        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{alert.timestamp.split('T')[0]}</span>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{alert.timestamp ? String(alert.timestamp).slice(0, 10) : ''}</span>
                      </div>
                      <div style={{ color: 'var(--text-primary)', fontSize: 13, lineHeight: 1.4 }}>{alert.headline}</div>
-                     <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{alert.team} • {alert.service} • {alert.provider.toUpperCase()}</div>
+                     <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{alert.team} • {alert.service} • {(alert.provider || '').toUpperCase()}</div>
                   </div>
                 ))}
                 {(!alerts || alerts.length === 0) && (
