@@ -1,0 +1,25 @@
+# Node and React (Frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+*.log
+
+# Python (Backend)
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+backend/data/raw/billing_data.parquet
+
+# Environment and IDE
+.env
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Logs
+logs/
+*.log
