@@ -110,11 +110,13 @@ def run_ensemble(stat_df: pd.DataFrame, ml_df: pd.DataFrame, dl_df: pd.DataFrame
     anomalies["type_label"] = anomalies["anomaly_type"].apply(
         lambda x: ANOMALY_TYPE_LABELS.get(x, "Unknown Anomaly")
     )
+    # Store the actual vote count (0-3) — not just a boolean flag.
+    # The alerts engine uses int(detector_votes) for severity weighting.
     anomalies["detector_votes"] = (
         anomalies["is_stat_anomaly"].astype(int) +
         anomalies["is_ml_anomaly"].astype(int) +
         anomalies["is_dl_anomaly"].astype(int)
-    ) >= 1
+    )
     anomalies["anomaly_id"] = anomalies["anomaly_id"].apply(
         lambda x: str(x) if pd.notna(x) and x else None
     )
