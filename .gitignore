@@ -7,11 +7,14 @@ frontend/.env
 # Python (Backend)
 backend/.venv/
 backend/venv/
-backend/__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+
+# Generated data (regenerated on startup)
 backend/data/raw/billing_data.parquet
+backend/data/raw/anomaly_manifest.json
 
 # Environment and IDE
 .env
@@ -19,7 +22,7 @@ backend/data/raw/billing_data.parquet
 .vscode/
 *.swp
 .DS_Store
+.gemini/
 
 # Logs
 logs/
-*.log
