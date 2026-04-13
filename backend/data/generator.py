@@ -188,7 +188,10 @@ def get_anomaly_multiplier(provider: str, service: str, team: str, env: str, day
 
 def generate_billing_data(days: int = 180) -> pd.DataFrame:
     """Generate unified billing DataFrame for all providers."""
-    start_date = datetime.now(ZoneInfo('Asia/Kolkata')) - timedelta(days=days)
+    # Use a fixed reference date for deterministic, reproducible data generation.
+    # This ensures regenerated data is identical regardless of when the script runs.
+    reference_date = datetime(2025, 6, 15, tzinfo=ZoneInfo('UTC'))
+    start_date = reference_date - timedelta(days=days)
     records = []
 
     for day_idx in range(days):
