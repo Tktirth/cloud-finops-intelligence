@@ -83,7 +83,7 @@ ANOMALY_EVENTS = [
         "service": "EC2",
         "team": "platform",
         "env": "production",
-        "start_day": 10,
+        "start_day": 170,  # ~10 days ago — shows in current month alerts
         "duration_days": 3,
         "multiplier": 4.2,
         "root_cause": "Misconfigured ALB health check caused continuous instance replacement",
@@ -97,7 +97,7 @@ ANOMALY_EVENTS = [
         "service": "CloudStorage",
         "team": "data-engineering",
         "env": "production",
-        "start_day": 80,
+        "start_day": 140,  # Started ~40 days ago, ongoing drift
         "duration_days": 40,
         "drift_per_day": 0.025,
         "root_cause": "Automated ML experiment snapshots without TTL policy",
@@ -111,7 +111,7 @@ ANOMALY_EVENTS = [
         "service": "BandwidthOut",
         "team": "devops",
         "env": "production",
-        "start_day": 85,
+        "start_day": 175,  # ~5 days ago — very recent
         "duration_days": 2,
         "multiplier": 8.5,
         "root_cause": "Backup job misconfigured to replicate to wrong region repeatedly",
@@ -125,7 +125,7 @@ ANOMALY_EVENTS = [
         "service": "EC2",
         "team": "data-engineering",
         "env": "production",
-        "start_day": 70,
+        "start_day": 165,  # ~15 days ago
         "duration_days": 5,
         "multiplier": 2.8,
         "root_cause": "Unplanned database migration ran during business hours with auto-retry",
@@ -139,7 +139,7 @@ ANOMALY_EVENTS = [
         "service": "ComputeEngine",
         "team": "ml-ops",
         "env": "staging",
-        "start_day": 55,
+        "start_day": 155,  # ~25 days ago
         "duration_days": 7,
         "multiplier": 3.1,
         "root_cause": "Cron job schedule drift caused training batch to overlap with peak pricing window",
@@ -187,11 +187,16 @@ def get_anomaly_multiplier(provider: str, service: str, team: str, env: str, day
 
 
 def generate_billing_data(days: int = 180) -> pd.DataFrame:
-    """Generate unified billing DataFrame for all providers."""
-    # Use a fixed reference date for deterministic, reproducible data generation.
-    # This ensures regenerated data is identical regardless of when the script runs.
-    reference_date = datetime(2025, 6, 15, tzinfo=ZoneInfo('UTC'))
-    start_date = reference_date - timedelta(days=days)
+    """
+    Generate unified billing DataFrame for all providers.
+    
+    REAL-TIME: Data always ends on TODAY's date. The last row in the
+    dataset is always the current date, so budgets, forecasts, and
+    alerts all compute against the live calendar month.
+    """
+    # End date is always TODAY — this is what makes everything real-time
+    end_date = datetime.now(ZoneInfo('UTC'))
+    start_date = end_date - timedelta(days=days)
     records = []
 
     for day_idx in range(days):
@@ -240,6 +245,7 @@ def generate_billing_data(days: int = 180) -> pd.DataFrame:
 
     df = pd.DataFrame(records)
     df["date"] = pd.to_datetime(df["date"])
+    print(f"📊 Data range: {df['date'].min().date()} → {df['date'].max().date()} (today)")
     return df
 
 
@@ -260,12 +266,32 @@ def save_data(df: pd.DataFrame, output_dir: str = "data/raw") -> str:
 
 
 def load_or_generate() -> pd.DataFrame:
-    """Load cached data or regenerate."""
-    cache_path = os.path.join(os.path.dirname(__file__), "raw", "billing_data.parquet")
+    """
+    Always generate fresh data on boot — never serve stale cached dates.
+    
+    This ensures budgets show the current month, forecasts project forward
+    from today, and alert timestamps are current. The ML pipeline runs
+    once on startup (~60s) and results are cached in-memory.
+    """
+    cache_dir = os.path.join(os.path.dirname(__file__), "raw")
+    cache_path = os.path.join(cache_dir, "billing_data.parquet")
+
+    # Check if cache is from today — if so, reuse it
     if os.path.exists(cache_path):
-        return pd.read_parquet(cache_path)
-    df = generate_billing_data(90)
-    save_data(df, os.path.join(os.path.dirname(__file__), "raw"))
+        try:
+            cached = pd.read_parquet(cache_path)
+            cached_max = pd.to_datetime(cached["date"]).max().date()
+            today = datetime.now(ZoneInfo('UTC')).date()
+            if cached_max == today:
+                print(f"♻️  Using cached data (already current: {cached_max})")
+                return cached
+            else:
+                print(f"🔄 Cache stale ({cached_max} ≠ {today}), regenerating...")
+        except Exception:
+            pass
+
+    df = generate_billing_data(180)
+    save_data(df, cache_dir)
     return df
 
 
