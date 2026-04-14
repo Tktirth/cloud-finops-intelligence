@@ -30,7 +30,11 @@ class DataStore:
         gc.collect()
 
         # Drop columns not needed for aggregation/UI to keep memory low
-        cols_to_keep = ['date', 'provider', 'service', 'resource_id', 'category', 'team', 'net_cost_usd', 'pricing_model']
+        cols_to_keep = [
+            'date', 'provider', 'service', 'resource_key', 'category', 
+            'team', 'cost_usd', 'pricing_model', 'is_anomaly', 
+            'anomaly_id', 'environment'
+        ]
         self.full = self.full[cols_to_keep]
         gc.collect()
 
