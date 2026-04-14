@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { usePolling } from '../hooks/useApi'
 import { getAlertsSummary, getMLStatus } from '../services/api'
+import { soundEngine } from '../services/soundEngine'
 
 const NAV = [
   { section: 'OPERATIONS', items: [
@@ -26,32 +27,33 @@ export default function Sidebar() {
   const pipelineReady = mlStatus?.status === 'Completed Successfully'
   const pipelineError = !!mlStatus?.error
   const statusColor = pipelineError ? 'var(--critical)' : pipelineReady ? 'var(--low)' : 'var(--medium)'
-  const statusBg = pipelineError ? 'rgba(255,61,87,0.08)' : pipelineReady ? 'rgba(6,214,160,0.08)' : 'rgba(255,209,102,0.08)'
-  const statusBorder = pipelineError ? 'rgba(255,61,87,0.2)' : pipelineReady ? 'rgba(6,214,160,0.2)' : 'rgba(255,209,102,0.2)'
-  const statusText = pipelineError ? 'Pipeline Error' : pipelineReady ? 'ML Pipeline Active' : (mlStatus?.status || 'Connecting...')
+  const statusBg = pipelineError ? 'rgba(239, 68, 68, 0.05)' : pipelineReady ? 'rgba(0, 255, 148, 0.05)' : 'rgba(251, 191, 36, 0.05)'
+  const statusBorder = pipelineError ? 'rgba(239, 68, 68, 0.15)' : pipelineReady ? 'rgba(0, 255, 148, 0.15)' : 'rgba(251, 191, 36, 0.15)'
+  const statusText = pipelineError ? 'Pipeline Error' : pipelineReady ? 'ML Engine Live' : (mlStatus?.status || 'Connecting...')
 
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
           <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: 'linear-gradient(135deg, #6C63FF, #9B59B6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            width: 36, height: 36, borderRadius: 10,
+            background: 'var(--gradient-blue)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px var(--accent-glow)'
           }}>
             <Cloud size={18} color="#fff" />
           </div>
           <div>
-            <div className="logo-text">FinOps AI</div>
-            <div className="logo-sub">Intelligence Platform</div>
+            <div className="logo-text">FinIntel Pro</div>
+            <div className="logo-sub">QUANTUM COST ENGINE</div>
           </div>
         </div>
 
         {/* Live Status — connected to real pipeline */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '6px 10px', background: statusBg, borderRadius: 8, border: `1px solid ${statusBorder}` }}>
-          {pipelineReady ? <div className="status-dot" /> : <Loader size={11} color={statusColor} style={{ animation: 'spin 1.5s linear infinite' }} />}
-          <span style={{ fontSize: 11, color: statusColor, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{statusText}</span>
-          <Zap size={11} color={statusColor} style={{ flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 14, padding: '7px 10px', background: statusBg, borderRadius: 8, border: `1px solid ${statusBorder}` }}>
+          {pipelineReady ? <div className="status-dot" style={{ background: 'var(--low)', boxShadow: '0 0 8px var(--low)' }} /> : <Loader size={11} color={statusColor} style={{ animation: 'spin 1.5s linear infinite' }} />}
+          <span style={{ fontSize: 10, color: statusColor, fontWeight: 700, letterSpacing: '0.05em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{statusText.toUpperCase()}</span>
+          <Zap size={11} color={statusColor} style={{ flexShrink: 0, opacity: 0.8 }} />
         </div>
         {pipelineReady && mlStatus?.data_end && (
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, paddingLeft: 2 }}>
@@ -74,6 +76,7 @@ export default function Sidebar() {
                   to={item.to}
                   end={item.to === '/'}
                   className={`nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => soundEngine.playTransition()}
                 >
                   <Icon size={16} />
                   {item.label}

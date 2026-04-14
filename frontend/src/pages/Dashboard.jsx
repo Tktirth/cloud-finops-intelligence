@@ -19,12 +19,12 @@ export default function Dashboard() {
   const { data: metrics } = usePolling(getAnomalyMetrics, [])
 
   return (
-    <div>
+    <div className="fade-in-up" style={{ animationDelay: '0.1s' }}>
       {/* KPI Row */}
       <KPICards />
 
       {/* Main grid */}
-      <div className="grid-2" style={{ gap: 16, marginBottom: 16 }}>
+      <div className="grid-2 fade-in-up" style={{ gap: 16, marginBottom: 16, animationDelay: '0.2s' }}>
         {/* Spend Timeline */}
         <div className="card chart-container">
           <div className="card-title" style={{ marginBottom: 14 }}>Daily Total Spend (6 Months)</div>

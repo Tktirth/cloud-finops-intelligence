@@ -62,8 +62,17 @@ export default function Header({ onRefresh }) {
         {/* Alert bell */}
         <div style={{ position: 'relative', marginLeft: 4 }} ref={notifRef}>
           <button 
-            onClick={() => setShowNotifications(!showNotifications)}
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 10, padding: '8px 10px', cursor: 'pointer', color: showNotifications ? 'var(--primary)' : 'var(--text-primary)', display: 'flex', transition: 'all 0.2s' }}
+            onClick={() => {
+              const newState = !showNotifications
+              setShowNotifications(newState)
+              if (newState) {
+                if (critical > 0) soundEngine.playCritical()
+                else soundEngine.playSuccess()
+              } else {
+                soundEngine.playClick()
+              }
+            }}
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 10, padding: '8px 10px', cursor: 'pointer', color: showNotifications ? 'var(--accent)' : 'var(--text-primary)', display: 'flex', transition: 'all 0.2s' }}
           >
             <Bell size={16} />
           </button>

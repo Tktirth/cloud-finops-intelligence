@@ -1,25 +1,33 @@
 import { DollarSign, AlertTriangle, TrendingUp, Server, Users, Cloud } from 'lucide-react'
 import { usePolling } from '../hooks/useApi'
 import { getOverviewSummary } from '../services/api'
+import { AnimatedCounter } from './AnimatedCounter'
 
-const fmt = (v) => v >= 1e6
-  ? `$${(v / 1e6).toFixed(2)}M`
-  : v >= 1e3 ? `$${(v / 1e3).toFixed(1)}K` : `$${v.toFixed(0)}`
+const fmtObj = (v) => {
+  if (v >= 1e6) return { value: (v / 1e6).toFixed(2), prefix: '$', suffix: 'M' }
+  if (v >= 1e3) return { value: (v / 1e3).toFixed(1), prefix: '$', suffix: 'K' }
+  return { value: v.toFixed(0), prefix: '$', suffix: '' }
+}
 
 function KpiCard({ icon: Icon, iconBg, label, value, change, changeDir, subtitle }) {
+  const meta = typeof value === 'number' ? fmtObj(value) : { value, prefix: '', suffix: '' }
+  
   return (
     <div className="card kpi-card">
-      <div className="kpi-icon" style={{ background: iconBg }}>
+      <div className="kpi-icon" style={{ background: iconBg, boxShadow: 'inset 0 0 10px rgba(255,255,255,0.2)' }}>
         <Icon size={20} color="#fff" />
       </div>
       <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-      {change && (
+      <div className="kpi-value">
+        <AnimatedCounter value={meta.value} prefix={meta.prefix} suffix={meta.suffix} />
+      </div>
+      {change != null && (
         <div className={`kpi-change ${changeDir}`}>
-          {changeDir === 'up' ? '↑' : '↓'} {Math.abs(change)}% MoM
+          <span style={{ fontSize: 10 }}>{changeDir === 'up' ? '▲' : '▼'}</span>
+          {Math.abs(change)}% <span style={{ opacity: 0.6, fontSize: 10, marginLeft: 2 }}>MoM</span>
         </div>
       )}
-      {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{subtitle}</div>}
+      {subtitle && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, fontWeight: 500 }}>{subtitle}</div>}
     </div>
   )
 }

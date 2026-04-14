@@ -7,8 +7,15 @@ import { usePolling } from '../hooks/useApi'
 import { getSpendTimeline, getSpendByProvider, getSpendByCategory } from '../services/api'
 import { format, parseISO } from 'date-fns'
 
-const PROVIDER_COLORS = { aws: '#FF9900', azure: '#0089D6', gcp: '#4CAF50' }
-const CATEGORY_COLORS = { compute: '#6C63FF', storage: '#FF8C42', database: '#FF3D57', networking: '#0089D6', analytics: '#4CAF50', other: '#8B9BC8' }
+const PROVIDER_COLORS = { aws: '#FF9900', azure: '#00A4EF', gcp: '#34A853' }
+const CATEGORY_COLORS = { 
+  compute: 'var(--accent)', 
+  storage: '#F59E0B', 
+  database: '#EF4444', 
+  networking: '#00A4EF', 
+  analytics: 'var(--low)', 
+  other: 'var(--text-muted)' 
+}
 
 function SpendTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
@@ -36,20 +43,42 @@ export function SpendTimeline() {
   })).filter((_, i) => i % 3 === 0) // sample every 3rd day for readability
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={220}>
       <AreaChart data={formatted}>
         <defs>
           <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#6C63FF" stopOpacity={0} />
+            <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4} />
+            <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
           </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
-        <Tooltip content={<SpendTooltip />} />
-        <Area type="monotone" dataKey="cost" stroke="#6C63FF" fill="url(#costGrad)" strokeWidth={2} dot={false} />
-        <Brush dataKey="date" height={25} stroke="#8B9BC8" fill="rgba(255,255,255,0.05)" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+        <XAxis 
+          dataKey="date" 
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
+          axisLine={false} 
+          tickLine={false} 
+          dy={10}
+        />
+        <YAxis 
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
+          axisLine={false} 
+          tickLine={false} 
+          tickFormatter={v => `$${(v/1000).toFixed(0)}K`} 
+        />
+        <Tooltip content={<SpendTooltip />} cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+        <Area 
+          type="monotone" 
+          dataKey="cost" 
+          stroke="var(--accent)" 
+          fill="url(#costGrad)" 
+          strokeWidth={3} 
+          dot={false}
+          style={{ filter: 'url(#glow)' }}
+        />
       </AreaChart>
     </ResponsiveContainer>
   )

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Header from './components/Header'
@@ -7,8 +8,19 @@ import Forecasts from './pages/Forecasts'
 import Budgets from './pages/Budgets'
 import Alerts from './pages/Alerts'
 import { LiveTicker } from './components/CommandCenter'
+import { soundEngine } from './services/soundEngine'
 
 export default function App() {
+  useEffect(() => {
+    // Browsers require a user interaction to start audio context
+    const initAudio = () => {
+      soundEngine.init()
+      window.removeEventListener('click', initAudio)
+    }
+    window.addEventListener('click', initAudio)
+    return () => window.removeEventListener('click', initAudio)
+  }, [])
+
   return (
     <BrowserRouter>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
