@@ -61,13 +61,14 @@ html, body, #root {
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
+  scroll-behavior: smooth;
 }
 
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; transition: background 0.3s; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* ─── Layout ─── */
 .app-layout {
@@ -91,6 +92,8 @@ html, body, #root {
   position: relative;
   background: var(--bg-primary);
   overflow-x: hidden;
+  scroll-behavior: smooth;
+  scroll-padding-top: 20px;
 }
 
 .page-content::before {
@@ -105,6 +108,7 @@ html, body, #root {
   z-index: -1;
   animation: aurora 20s ease-in-out infinite alternate;
   will-change: transform, opacity;
+  transform: translate3d(0,0,0); /* Force GPU acceleration */
 }
 
 @keyframes aurora {
