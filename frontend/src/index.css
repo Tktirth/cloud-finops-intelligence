@@ -4,49 +4,47 @@
 ═══════════════════════════════════════════════════════════ */
 
 :root {
-  /* Color Palette */
-  --bg-primary: #070b14;
-  --bg-secondary: #0d1424;
-  --bg-card: rgba(255,255,255,0.04);
-  --bg-card-hover: rgba(255,255,255,0.07);
-  --glass-border: rgba(255,255,255,0.08);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  /* Color Palette — Fintech Blue & Cyberpunk Emerald */
+  --bg-primary: #030712;
+  --bg-secondary: #0B1120;
+  --bg-card: rgba(17, 24, 39, 0.4);
+  --bg-card-hover: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 
-  /* Provider Colors */
+  /* Provider Colors — Muted but distinct */
   --aws: #FF9900;
-  --aws-dim: rgba(255,153,0,0.15);
-  --azure: #0089D6;
-  --azure-dim: rgba(0,137,214,0.15);
-  --gcp: #4CAF50;
-  --gcp-dim: rgba(76,175,80,0.15);
+  --aws-dim: rgba(255, 153, 0, 0.1);
+  --azure: #00A4EF;
+  --azure-dim: rgba(0, 164, 239, 0.1);
+  --gcp: #34A853;
+  --gcp-dim: rgba(52, 168, 83, 0.1);
 
   /* Severity Colors */
-  --critical: #FF3D57;
-  --critical-dim: rgba(255,61,87,0.15);
-  --high: #FF8C42;
-  --high-dim: rgba(255,140,66,0.15);
-  --medium: #FFD166;
-  --medium-dim: rgba(255,209,102,0.15);
-  --low: #06D6A0;
-  --low-dim: rgba(6,214,160,0.15);
+  --critical: #EF4444;
+  --critical-dim: rgba(239, 68, 68, 0.1);
+  --high: #F59E0B;
+  --high-dim: rgba(245, 158, 11, 0.1);
+  --medium: #FBBF24;
+  --medium-dim: rgba(251, 191, 36, 0.1);
+  --low: #00FF94; /* Cyberpunk Emerald */
+  --low-dim: rgba(0, 255, 148, 0.08);
 
-  /* Text */
-  --text-primary: #F0F4FF;
-  --text-secondary: #8B9BC8;
-  --text-muted: #4A5580;
+  /* Text — Highly legible */
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #4B5563;
 
-  /* Accent */
-  --accent: #6C63FF;
-  --accent-dim: rgba(108,99,255,0.15);
-  --accent-glow: rgba(108,99,255,0.4);
+  /* Fintech Accent */
+  --accent: #0B63E5; /* Bank Blue */
+  --accent-dim: rgba(11, 99, 229, 0.12);
+  --accent-glow: rgba(11, 99, 229, 0.3);
 
   /* Gradients */
-  --gradient-purple: linear-gradient(135deg, #6C63FF 0%, #9B59B6 100%);
-  --gradient-aws: linear-gradient(135deg, #FF9900 0%, #FF6B6B 100%);
-  --gradient-azure: linear-gradient(135deg, #0089D6 0%, #0652DD 100%);
-  --gradient-gcp: linear-gradient(135deg, #4CAF50 0%, #0F9B8E 100%);
-  --gradient-critical: linear-gradient(135deg, #FF3D57 0%, #FF6B6B 100%);
-  --gradient-card: linear-gradient(135deg, rgba(108,99,255,0.1) 0%, rgba(0,0,0,0) 100%);
+  --gradient-blue: linear-gradient(135deg, #0B63E5 0%, #00D1FF 100%);
+  --gradient-emerald: linear-gradient(135deg, #00FF94 0%, #00BFA5 100%);
+  --gradient-card: linear-gradient(135deg, rgba(11, 99, 229, 0.05) 0%, rgba(0,0,0,0) 100%);
+  --gradient-dark: linear-gradient(180deg, #0B1120 0%, #030712 100%);
 
   /* Spacing */
   --sidebar-w: 260px;
@@ -90,8 +88,8 @@ html, body, #root {
   flex: 1;
   overflow-y: auto;
   padding: 24px 28px;
-  background: radial-gradient(ellipse at 20% 0%, rgba(108,99,255,0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 100%, rgba(0,137,214,0.06) 0%, transparent 50%),
+  background: radial-gradient(circle at 0% 0%, rgba(11, 99, 229, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 100% 100%, rgba(0, 255, 148, 0.05) 0%, transparent 40%),
               var(--bg-primary);
 }
 
@@ -146,7 +144,7 @@ html, body, #root {
   padding: 24px 20px 16px;
   border-bottom: 1px solid var(--glass-border);
 }
-.sidebar-logo .logo-text { font-size: 16px; font-weight: 800; background: var(--gradient-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sidebar-logo .logo-text { font-size: 16px; font-weight: 800; background: var(--gradient-blue); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .sidebar-logo .logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
 .sidebar-nav { flex: 1; padding: 12px 12px; overflow-y: auto; }
 .nav-section-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; padding: 16px 8px 6px; }
