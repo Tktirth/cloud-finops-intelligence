@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Bell, Search, RefreshCw, X } from 'lucide-react'
+import { Bell, Search, RefreshCw, X, Activity } from 'lucide-react'
 import { usePolling } from '../hooks/useApi'
 import { getAlertsSummary, getAlerts } from '../services/api'
+import { LiveClock } from './CommandCenter'
 
 const PAGE_TITLES = {
   '/': 'Multi-Cloud Overview',
@@ -34,20 +35,29 @@ export default function Header({ onRefresh }) {
 
   return (
     <header className="header">
-      <div>
-        <h1 className="header-title">{title}</h1>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-          Real-time AI-powered cloud cost intelligence
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+          <Activity size={20} />
+        </div>
+        <div>
+          <h1 className="header-title">{title}</h1>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.02em' }}>
+            AI-POWERED CLOUD COST INTELLIGENCE • <span style={{ color: 'var(--low)' }}>LIVE SYNC ENABLED</span>
+          </div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {['aws', 'azure', 'gcp'].map(p => (
-          <div key={p} className={`header-pill provider-pill-${p}`}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
-            {p.toUpperCase()}
-          </div>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {['aws', 'azure', 'gcp'].map(p => (
+            <div key={p} className={`header-pill provider-pill-${p}`}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
+              {p.toUpperCase()}
+            </div>
+          ))}
+        </div>
+
+        <LiveClock />
 
         {/* Alert bell */}
         <div style={{ position: 'relative', marginLeft: 4 }} ref={notifRef}>
