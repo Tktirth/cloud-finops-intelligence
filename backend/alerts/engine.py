@@ -1,6 +1,7 @@
 """
 Alert Engine
 Configurable alert rules with severity scoring and budget breach prediction.
+Uses dynamic quarterly budgets from the data generator for full sync.
 """
 
 import numpy as np
@@ -8,24 +9,13 @@ import pandas as pd
 from datetime import datetime, timedelta
 from scipy.stats import norm
 
+# Import dynamic budget functions from the data generator
+from data.generator import get_team_monthly_budget, PROVIDER_MONTHLY_BUDGETS, TEAMS
 
-# ─────────────────────────────────────────────
-# Budget Configuration (mock — configurable)
-# ─────────────────────────────────────────────
 
-TEAM_MONTHLY_BUDGETS = {
-    "platform": 250000,
-    "data-engineering": 190000,
-    "ml-ops": 135000,  # Deliberately lower to trigger OVER_BUDGET
-    "frontend": 125000,
-    "devops": 85000,
-}
-
-PROVIDER_MONTHLY_BUDGETS = {
-    "aws": 275000,  # Deliberately lower to trigger OVER_BUDGET
-    "azure": 250000,
-    "gcp": 260000,
-}
+def _get_current_team_budgets(reference_date) -> dict:
+    """Get team budgets for the current quarter based on reference date."""
+    return {team: get_team_monthly_budget(team, reference_date) for team in TEAMS}
 
 ALERT_SEVERITY_THRESHOLDS = {
     "CRITICAL": 75,
@@ -95,7 +85,7 @@ def predict_budget_breach(daily_df: pd.DataFrame, forecasts: dict) -> list:
         next_month = month_start.replace(month=month_start.month + 1)
     days_remaining = (next_month - current_date).days
 
-    for team, budget in TEAM_MONTHLY_BUDGETS.items():
+    for team, budget in _get_current_team_budgets(current_date).items():
         spent = float(month_spending.get(team, 0))
         remaining_budget = budget - spent
 
