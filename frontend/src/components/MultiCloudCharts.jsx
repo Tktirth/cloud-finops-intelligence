@@ -43,47 +43,53 @@ export function SpendTimeline() {
   }))
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 10, cursor: 'grab' }} className="custom-scrollbar">
-      <div style={{ width: 2000 }}>
-        <AreaChart width={2000} height={240} data={formatted}>
-          <defs>
-            <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
-            </linearGradient>
-            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-          <XAxis 
-            dataKey="date" 
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
-            axisLine={false} 
-            tickLine={false} 
-            dy={8}
-            interval={0} // Show every day for 100% fidelity
-          />
-          <YAxis 
-            tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
-            axisLine={false} 
-            tickLine={false} 
-            tickFormatter={v => `$${(v/1000).toFixed(0)}K`} 
-          />
-          <Tooltip content={<SpendTooltip />} cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }} />
-          <Area 
-            type="monotone" 
-            dataKey="cost" 
-            stroke="var(--accent)" 
-            fill="url(#costGrad)" 
-            strokeWidth={3} 
-            dot={false}
-            style={{ filter: 'url(#glow)' }}
-          />
-        </AreaChart>
-      </div>
-    </div>
+    <ResponsiveContainer width="100%" height={260}>
+      <AreaChart data={formatted}>
+        <defs>
+          <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4} />
+            <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+          </linearGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+        <XAxis 
+          dataKey="date" 
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
+          axisLine={false} 
+          tickLine={false} 
+          dy={10}
+          interval="preserveStartEnd"
+          minTickGap={50} // Prevents label overlapping
+        />
+        <YAxis 
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
+          axisLine={false} 
+          tickLine={false} 
+          tickFormatter={v => `$${(v/1000).toFixed(0)}K`} 
+        />
+        <Tooltip content={<SpendTooltip />} cursor={{ stroke: 'var(--accent)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+        <Area 
+          type="monotone" 
+          dataKey="cost" 
+          stroke="var(--accent)" 
+          fill="url(#costGrad)" 
+          strokeWidth={3} 
+          dot={false}
+          style={{ filter: 'url(#glow)' }}
+        />
+        <Brush 
+          dataKey="date" 
+          height={20} 
+          stroke="var(--accent)" 
+          fill="rgba(11, 99, 229, 0.05)" 
+          travellerWidth={10}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -101,26 +107,32 @@ export function ProviderSpendChart() {
   const chartData = Object.values(byDate)
 
   return (
-    <div style={{ width: '100%', overflowX: 'auto', paddingBottom: 10, cursor: 'grab' }} className="custom-scrollbar">
-      <div style={{ width: 2200 }}>
-        <BarChart width={2200} height={240} data={chartData} barCategoryGap="20%">
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-          <XAxis 
-            dataKey="date" 
-            tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
-            axisLine={false} 
-            tickLine={false} 
-            interval={0}
-          />
-          <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
-          <Tooltip content={<SpendTooltip />} />
-          {Object.entries(PROVIDER_COLORS).map(([p, c]) => (
-            <Bar key={p} dataKey={p} stackId="a" fill={c} radius={p === 'gcp' ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
-          ))}
-          <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v.toUpperCase()}</span>} verticalAlign="top" height={36} />
-        </BarChart>
-      </div>
-    </div>
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={chartData} barCategoryGap="20%">
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <XAxis 
+          dataKey="date" 
+          tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+          axisLine={false} 
+          tickLine={false} 
+          interval="preserveStartEnd"
+          minTickGap={40}
+        />
+        <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
+        <Tooltip content={<SpendTooltip />} />
+        {Object.entries(PROVIDER_COLORS).map(([p, c]) => (
+          <Bar key={p} dataKey={p} stackId="a" fill={c} radius={p === 'gcp' ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
+        ))}
+        <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v.toUpperCase()}</span>} verticalAlign="top" height={36} />
+        <Brush 
+          dataKey="date" 
+          height={20} 
+          stroke="var(--low)" 
+          fill="rgba(0, 255, 148, 0.05)" 
+          travellerWidth={10}
+        />
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 
