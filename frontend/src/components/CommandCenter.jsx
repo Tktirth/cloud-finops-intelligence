@@ -21,47 +21,109 @@ export function LiveClock() {
 }
 
 export function LiveTicker() {
-  const [items, setItems] = useState([
-    { label: 'AWS EC2', value: '+$0.12', color: 'var(--low)' },
-    { label: 'GCP BQ', value: '-$0.05', color: 'var(--critical)' },
-    { label: 'AZURE VM', value: '+$0.08', color: 'var(--low)' },
-    { label: 'AWS S3', value: '+$0.02', color: 'var(--low)' },
+  const [tickerSlots, setTickerSlots] = useState([
+    { label: '$AMZN (AWS)', value: '185.02', change: '+1.2%', color: 'var(--low)', isIndex: true },
+    { label: '$MSFT (AZR)', value: '420.15', change: '+0.8%', color: 'var(--low)', isIndex: true },
+    { label: '$GOOGL (GCP)', value: '158.42', change: '-0.3%', color: 'var(--critical)', isIndex: true },
+    { label: 'AWS EC2', value: '0.12', change: '+', color: 'var(--low)', isIndex: false },
+    { label: 'AZURE VM', value: '0.08', change: '+', color: 'var(--low)', isIndex: false },
+    { label: 'GCP BQ', value: '0.05', change: '-', color: 'var(--critical)', isIndex: false },
+    { label: 'EU-WEST-1', value: 'SYNC', change: 'OK', color: 'var(--low)', isIndex: false },
+    { label: 'US-EAST-1', value: 'SYNC', change: 'OK', color: 'var(--low)', isIndex: false },
   ])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const providers = ['AWS', 'AZURE', 'GCP']
-      const services = ['EC2', 'S3', 'RDS', 'Lambda', 'VM', 'Blob', 'Cosmos', 'BQ', 'GKE']
-      const p = providers[Math.floor(Math.random() * providers.length)]
-      const s = services[Math.floor(Math.random() * services.length)]
-      const val = (Math.random() * 0.15).toFixed(2)
-      const isUp = Math.random() > 0.3
-      
-      const newItem = {
-        label: `${p} ${s}`,
-        value: `${isUp ? '+' : '-'}$${val}`,
-        color: isUp ? 'var(--low)' : 'var(--critical)'
-      }
-
-      setItems(prev => [newItem, ...prev.slice(0, 5)])
-    }, 6000)
-
+      setTickerSlots(prev => prev.map(slot => {
+        if (slot.isIndex) {
+          // Indices fluctuate less frequently
+          if (Math.random() > 0.8) {
+            const val = parseFloat(slot.value) + (Math.random() - 0.4)
+            const up = Math.random() > 0.4
+            return { ...slot, value: val.toFixed(2), change: (up ? '+' : '-') + (Math.random()*0.5).toFixed(1) + '%', color: up ? 'var(--low)' : 'var(--critical)' }
+          }
+          return slot
+        } else {
+          // Costs fluctuate more
+          const providers = ['AWS', 'AZR', 'GCP']
+          const services = ['EC2', 'S3', 'RDS', 'Lambda', 'VM', 'Blob', 'Cosmos', 'BQ', 'GKE']
+          const isUp = Math.random() > 0.3
+          return {
+            ...slot,
+            label: slot.label.includes('-') ? slot.label : `${providers[Math.floor(Math.random()*3)]} ${services[Math.floor(Math.random()*9)]}`,
+            value: (Math.random() * 0.15).toFixed(2),
+            change: isUp ? '+' : '-',
+            color: isUp ? 'var(--low)' : 'var(--critical)'
+          }
+        }
+      }))
+    }, 4000)
     return () => clearInterval(interval)
   }, [])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '0 20px', height: 28, background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--glass-border)', overflow: 'hidden' }}>
-      <div style={{ fontSize: 10, fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span className="status-dot" style={{ width: 6, height: 6 }} /> LIVE FEED
+    <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: 0, height: 28, background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid var(--glass-border)', overflow: 'hidden', position: 'relative' }}>
+      {/* Permanent Status Indicator */}
+      <div style={{ 
+        height: '100%', padding: '0 12px', background: 'var(--bg-primary)', zIndex: 100,
+        fontSize: 9, fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', 
+        letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: 6,
+        borderRight: '1px solid var(--glass-border)', boxShadow: '4px 0 10px rgba(0,0,0,0.4)'
+      }}>
+        <span className="status-dot" style={{ width: 5, height: 5 }} /> 
+        <span style={{ whiteSpace: 'nowrap' }}>CLOUD TAPE</span>
+        <span style={{ color: 'var(--text-muted)', fontWeight: 500, opacity: 0.6 }}>// STABLE</span>
       </div>
-      <div style={{ display: 'flex', gap: 24, animation: 'ticker 30s linear infinite' }}>
-        {items.map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, fontSize: 10, fontWeight: 600, whiteSpace: 'nowrap' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>{item.label}:</span>
-            <span style={{ color: item.color }}>{item.value}</span>
+
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 0, 
+        animation: 'ticker 120s linear infinite', // Slower, more presidential crawl
+        willChange: 'transform'
+      }}>
+        {/* Triple-Buffer for ultra-seamless loop */}
+        {[...tickerSlots, ...tickerSlots, ...tickerSlots].map((item, i) => (
+          <div 
+            key={`${i}-${item.label}`} 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: 8, 
+              fontSize: 10, 
+              fontWeight: 800, 
+              whiteSpace: 'nowrap',
+              width: item.isIndex ? 220 : 180, 
+              padding: '0 20px',
+              borderRight: '1px solid rgba(255,255,255,0.05)',
+              flexShrink: 0,
+              transition: 'all 0.5s ease'
+            }}
+          >
+            <span style={{ color: item.isIndex ? 'var(--text-primary)' : 'var(--text-secondary)', opacity: item.isIndex ? 1 : 0.7 }}>
+              {item.label}
+            </span>
+            <span style={{ 
+              color: item.color, 
+              fontFamily: 'monospace', 
+              textShadow: `0 0 10px ${item.color.replace('var(--', 'rgba(0,255,148,0.2')}` 
+            }}>
+              {item.isIndex ? '$' : '+'}{item.value}
+            </span>
+            <span style={{ 
+              backgroundColor: item.color === 'var(--low)' ? 'rgba(0,255,148,0.1)' : 'rgba(239,68,68,0.1)',
+              color: item.color,
+              padding: '1px 4px',
+              borderRadius: '2px',
+              fontSize: 9,
+              fontWeight: 900
+            }}>
+              {item.change}
+            </span>
           </div>
         ))}
       </div>
     </div>
   )
 }
+
