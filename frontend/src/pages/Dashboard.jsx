@@ -44,15 +44,19 @@ export default function Dashboard() {
 
         {/* Detection metrics + Category donut */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {metrics && (
+          {metrics ? (
             <div className="card" style={{ padding: 20 }}>
               <div className="card-title" style={{ marginBottom: 12 }}>Anomaly Detection Accuracy</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
-                <MetricBubble label="F1 Score" value={(metrics.f1 * 100).toFixed(0) + '%'} color="var(--low)" />
-                <MetricBubble label="Precision" value={(metrics.precision * 100).toFixed(0) + '%'} color="var(--accent)" />
-                <MetricBubble label="Recall" value={(metrics.recall * 100).toFixed(0) + '%'} color="var(--aws)" />
+                <MetricBubble label="F1 Score" value={((metrics.f1 || 0) * 100).toFixed(0) + '%'} color="var(--low)" />
+                <MetricBubble label="Precision" value={((metrics.precision || 0) * 100).toFixed(0) + '%'} color="var(--accent)" />
+                <MetricBubble label="Recall" value={((metrics.recall || 0) * 100).toFixed(0) + '%'} color="var(--aws)" />
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Stats: {metrics.true_positives} TP · {metrics.false_positives} FP · {metrics.false_negatives} FN</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Stats: {metrics.true_positives || 0} TP · {metrics.false_positives || 0} FP · {metrics.false_negatives || 0} FN</div>
+            </div>
+          ) : (
+            <div className="card" style={{ padding: 20, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Calculating ML metrics...</div>
             </div>
           )}
           <div className="card" style={{ padding: 20, flex: 1 }}>

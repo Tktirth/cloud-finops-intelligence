@@ -1,7 +1,7 @@
 import axios from 'axios'
+import config from '../config'
 
-const baseURL = import.meta.env.VITE_API_URL || '/api'
-const api = axios.create({ baseURL })
+const api = axios.create({ baseURL: config.apiUrl })
 
 export const getOverviewSummary = () => api.get('/overview/summary').then(r => r.data)
 export const getSpendTimeline = () => api.get('/overview/spend-timeline').then(r => r.data)

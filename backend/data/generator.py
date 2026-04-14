@@ -723,7 +723,7 @@ def _calculate_service_base_cost(provider: str, service: str, env: str,
 # MAIN GENERATOR
 # ═══════════════════════════════════════════════════════════
 
-def generate_billing_data(days: int = 180) -> pd.DataFrame:
+def generate_billing_data(days: int = 90) -> pd.DataFrame:
     """
     Generate production-grade multi-cloud billing data.
 

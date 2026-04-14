@@ -11,10 +11,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+import psutil
 
 # ─────────────────────────────────────────────
 # Startup: Run entire ML pipeline
 # ─────────────────────────────────────────────
+
+def get_mem_usage():
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / 1024 / 1024
 
 _ml_error = None
 _ml_step = "Initialized"
@@ -22,13 +27,19 @@ _ml_step = "Initialized"
 async def run_ml_pipeline():
     global _ml_error, _ml_step
     try:
-        _ml_step = "Step 1: Loading ML Data"
+        start_mem = get_mem_usage()
+        _ml_step = f"Step 1: Loading ML Data (MEM: {start_mem:.1f}MB)"
+        print(f"🚀 Pipeline Started. Initial RAM: {start_mem:.1f}MB")
+        
         from data.db import get_store
         store = await asyncio.to_thread(get_store)
         from routers.overview import set_store
         set_store(store)
 
-        _ml_step = "Step 2: Statistical Anomaly Detection"
+        mid_mem = get_mem_usage()
+        _ml_step = f"Step 2: ML Modules (MEM: {mid_mem:.1f}MB)"
+        print(f"📈 Mid-pipeline RAM: {mid_mem:.1f}MB")
+
         from detection.statistical import run_statistical_detection
         stat_df = await asyncio.to_thread(run_statistical_detection, store.daily)
 
@@ -37,8 +48,6 @@ async def run_ml_pipeline():
         ml_df = await asyncio.to_thread(run_ml_detection, store.daily, 0.03)
 
         _ml_step = "Step 4: Deep Learning (Bypassed for Free Tier Memory Limits)"
-        # We manually build a fake DL dataframe filled with False to keep the ensemble mathematically happy
-        # This completely avoids loading PyTorch binaries into the 512MB RAM ceiling
         dl_df = store.daily.copy()
         dl_df["is_dl_anomaly"] = False
         dl_df["dl_score"] = 0.0
@@ -52,11 +61,9 @@ async def run_ml_pipeline():
         set_anomalies(anomalies_df)
 
         _ml_step = "Step 6: Real-time Forecasting (LightGBM-Only for Free Tier Memory)"
-        # Bypass Prophet completely to save OS thread-level recompilation memory
         from forecasting.lgbm_model import run_lgbm_forecasts
         forecasts_raw = await asyncio.to_thread(run_lgbm_forecasts, store.daily)
         
-        # Package identically to what the ensemble API contract expects
         forecasts = {}
         for k, df in forecasts_raw.items():
             if isinstance(df, pd.DataFrame) and not df.empty:
@@ -74,13 +81,13 @@ async def run_ml_pipeline():
         set_alert_data(alert_list)
         set_budget_data(breach_data)
 
+        end_mem = get_mem_usage()
         _ml_step = "Completed Successfully"
-        print(f"\n✅ Pipeline complete!")
+        print(f"✅ Pipeline complete! Peak RAM: {max(start_mem, mid_mem, end_mem):.1f}MB | Current: {end_mem:.1f}MB")
     except Exception as e:
         import traceback
         _ml_error = traceback.format_exc()
-        print("\n❌ PIPELINE CRASHED:", e)
-        print(_ml_error)
+        print(f"❌ PIPELINE CRASHED at Step {_ml_step} (MEM: {get_mem_usage():.1f}MB):", e)
 
 @asynccontextmanager
 async def lifespan(app):

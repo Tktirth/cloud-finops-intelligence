@@ -49,38 +49,38 @@ export default function KPICards() {
     )
   }
 
-  const changeDir = data.mom_change_pct >= 0 ? 'up' : 'down'
+  const changeDir = (data?.mom_change_pct || 0) >= 0 ? 'up' : 'down'
 
   return (
     <div className="kpi-grid">
       <KpiCard
         icon={DollarSign}
-        iconBg="linear-gradient(135deg, #6C63FF, #9B59B6)"
-        label="Total 6-Month Spend"
-        value={fmt(data.total_spend_6m)}
-        change={data.mom_change_pct}
+        iconBg="var(--gradient-blue)"
+        label="Total Spend (90D)"
+        value={data?.total_spend_6m || 0}
+        change={data?.mom_change_pct || 0}
         changeDir={changeDir}
       />
       <KpiCard
         icon={TrendingUp}
-        iconBg="linear-gradient(135deg, #0089D6, #0652DD)"
+        iconBg="var(--gradient-blue)"
         label="Last 30-Day Spend"
-        value={fmt(data.spend_last_30d)}
-        subtitle={`Avg $${((data.spend_last_30d || 0) / 30).toFixed(0)}/day`}
+        value={data?.spend_last_30d || 0}
+        subtitle={`Avg $${((data?.spend_last_30d || 0) / 30).toFixed(0)}/day`}
       />
       <KpiCard
         icon={AlertTriangle}
         iconBg="linear-gradient(135deg, #FF3D57, #FF6B6B)"
         label="Anomaly Events"
-        value={data.anomaly_count}
-        subtitle="Labeled anomaly types"
+        value={data?.anomaly_count || 0}
+        subtitle="Identified patterns"
       />
       <KpiCard
         icon={Cloud}
-        iconBg="linear-gradient(135deg, #4CAF50, #0F9B8E)"
-        label="Cloud Coverage"
-        value={`${data.providers_count} Providers`}
-        subtitle={`${data.services_count} Services · ${data.teams_count} Teams`}
+        iconBg="var(--gradient-emerald)"
+        label="Environment Coverage"
+        value={`${data?.providers_count || 0} Providers`}
+        subtitle={`${data?.services_count || 0} Services · ${data?.teams_count || 0} Teams`}
       />
     </div>
   )

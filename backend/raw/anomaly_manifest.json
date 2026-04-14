@@ -1,0 +1,183 @@
+[
+  {
+    "id": "ANM-2026-001",
+    "type": "auto_scaling_storm",
+    "description": "Auto-scaling group runaway \u2014 ALB health check misconfigured causing continuous instance launches/terminations at 30s intervals",
+    "provider": "aws",
+    "service": "EC2",
+    "team": "platform-infra",
+    "env": "production",
+    "start_day": 170,
+    "duration_days": 2,
+    "multiplier": 3.8,
+    "correlated_services": {
+      "DataTransfer": 2.5,
+      "CloudFront": 1.4
+    },
+    "root_cause": "ALB target group health check path returned 503 intermittently, triggering ASG to replace instances in a loop. Each replacement pulled container images (2.3GB) from ECR, amplifying DataTransfer costs.",
+    "contributing_services": [
+      "EC2",
+      "DataTransfer",
+      "CloudFront",
+      "CloudWatch"
+    ],
+    "remediation": "Fixed health check endpoint, added ASG cooldown period of 300s, set max instance count cap"
+  },
+  {
+    "id": "ANM-2026-002",
+    "type": "zombie_resources",
+    "description": "Forgotten GPU instances from ML experiment left running for 18 days in staging",
+    "provider": "gcp",
+    "service": "ComputeEngine",
+    "team": "ml-platform",
+    "env": "staging",
+    "start_day": 150,
+    "duration_days": 18,
+    "multiplier": 2.4,
+    "correlated_services": {
+      "CloudStorage": 1.6
+    },
+    "root_cause": "ML engineer launched 4x n1-standard-8 with Tesla T4 GPUs for hyperparameter tuning. Experiment completed but instances were not terminated. No auto-shutdown policy existed for staging GPU resources.",
+    "contributing_services": [
+      "ComputeEngine",
+      "CloudStorage"
+    ],
+    "remediation": "Implemented 72-hour TTL policy for all staging GPU instances, added Slack alerts for idle GPU utilization below 5%"
+  },
+  {
+    "id": "ANM-2026-003",
+    "type": "data_egress_blast",
+    "description": "Cross-region backup misconfigured \u2014 replicating production database to wrong region in a loop",
+    "provider": "azure",
+    "service": "BandwidthOut",
+    "team": "devops-sre",
+    "env": "production",
+    "start_day": 176,
+    "duration_days": 1,
+    "multiplier": 12.0,
+    "correlated_services": {
+      "BlobStorage": 2.0,
+      "CosmosDB": 1.5
+    },
+    "root_cause": "Disaster recovery script pointed to westeurope instead of eastus2. CosmosDB change feed replicated 340GB across regions 8 times before the pipeline error was caught by Azure Monitor alert.",
+    "contributing_services": [
+      "BandwidthOut",
+      "BlobStorage",
+      "CosmosDB"
+    ],
+    "remediation": "Fixed DR target region, added region validation check in deployment pipeline, implemented bandwidth anomaly alert at 200% threshold"
+  },
+  {
+    "id": "ANM-2026-004",
+    "type": "snapshot_accumulation",
+    "description": "EBS snapshot retention policy disabled \u2014 snapshots accumulating since last infra change",
+    "provider": "aws",
+    "service": "S3",
+    "team": "data-engineering",
+    "env": "production",
+    "start_day": 120,
+    "duration_days": 60,
+    "drift_per_day": 0.018,
+    "correlated_services": {},
+    "root_cause": "Terraform state drift disabled the Data Lifecycle Manager policy for daily EBS snapshots. 1,847 snapshots accumulated over 60 days, adding ~$38/day in incremental storage costs.",
+    "contributing_services": [
+      "S3"
+    ],
+    "remediation": "Re-enabled DLM policy, purged snapshots older than 14 days, added Terraform drift detection in CI/CD pipeline"
+  },
+  {
+    "id": "ANM-2026-005",
+    "type": "lambda_cold_start_cascade",
+    "description": "New Lambda deployment triggered cold start cascade with exponential retry storms",
+    "provider": "aws",
+    "service": "Lambda",
+    "team": "product-backend",
+    "env": "production",
+    "start_day": 173,
+    "duration_days": 1,
+    "multiplier": 6.5,
+    "correlated_services": {
+      "DataTransfer": 1.8,
+      "RDS": 2.2
+    },
+    "root_cause": "New deployment increased Lambda package size from 45MB to 180MB (included unnecessary ML dependencies). Cold start time jumped from 800ms to 4.2s, causing API Gateway 29s timeout retries. Each retry spawned new Lambda instances, creating a cascade that peaked at 3,200 concurrent executions.",
+    "contributing_services": [
+      "Lambda",
+      "DataTransfer",
+      "RDS",
+      "CloudFront"
+    ],
+    "remediation": "Stripped unnecessary dependencies from Lambda package, implemented circuit breaker pattern, added concurrency limit of 500"
+  },
+  {
+    "id": "ANM-2026-006",
+    "type": "spot_interruption_fallback",
+    "description": "Spot instance mass interruption during capacity shortage \u2014 automatic fallback to on-demand pricing",
+    "provider": "aws",
+    "service": "EKS",
+    "team": "platform-infra",
+    "env": "production",
+    "start_day": 165,
+    "duration_days": 3,
+    "multiplier": 2.1,
+    "correlated_services": {
+      "EC2": 1.6,
+      "DataTransfer": 1.3
+    },
+    "root_cause": "AWS reclaimed spot capacity in us-east-1a/1b simultaneously during a major availability event. Karpenter provisioner automatically launched 18 on-demand c5.4xlarge instances at 3.4x the spot price. No fallback instance type diversification was configured.",
+    "contributing_services": [
+      "EKS",
+      "EC2",
+      "DataTransfer"
+    ],
+    "remediation": "Added instance type diversification (c5, m5, r5 families), spread across 4 AZs, implemented 70/30 spot/on-demand ratio cap"
+  },
+  {
+    "id": "ANM-2026-007",
+    "type": "database_auto_scaling",
+    "description": "BigQuery slot auto-scaling during quarterly analytics run consumed 8x normal compute",
+    "provider": "gcp",
+    "service": "BigQuery",
+    "team": "data-engineering",
+    "env": "production",
+    "start_day": 160,
+    "duration_days": 4,
+    "multiplier": 4.2,
+    "correlated_services": {
+      "CloudStorage": 1.8,
+      "EgressCost": 1.5
+    },
+    "root_cause": "Quarterly business review pipeline ran 340 complex CROSS JOIN queries scanning 1.2PB of partitioned data. BigQuery Editions flex slots auto-scaled to 2,000 slots. No query cost guardrails or per-query byte limits were configured.",
+    "contributing_services": [
+      "BigQuery",
+      "CloudStorage",
+      "EgressCost"
+    ],
+    "remediation": "Implemented per-query byte scan limit (10TB max), added project-level slot reservation cap, optimized quarterly queries with materialized views"
+  },
+  {
+    "id": "ANM-2026-008",
+    "type": "end_of_month_batch_anomaly",
+    "description": "Month-end ML training pipeline scheduled at wrong time, overlapping with peak production traffic",
+    "provider": "gcp",
+    "service": "ComputeEngine",
+    "team": "ml-platform",
+    "env": "production",
+    "start_day": 178,
+    "duration_days": 2,
+    "multiplier": 3.5,
+    "correlated_services": {
+      "CloudStorage": 2.2,
+      "BigQuery": 1.4,
+      "EgressCost": 1.6
+    },
+    "root_cause": "Monthly model retraining cron (0 2 28-31 * *) launched 16 n1-highmem-8 instances with A100 GPUs during the same window as the production traffic peak. Combined GPU compute + data pipeline IO saturated the project's quota, causing preemptible instance churn.",
+    "contributing_services": [
+      "ComputeEngine",
+      "CloudStorage",
+      "BigQuery",
+      "EgressCost"
+    ],
+    "remediation": "Rescheduled training to 2am weekend window, implemented resource quotas per workload type, added preemptible retry budget"
+  }
+]

@@ -44,41 +44,39 @@ export default function Anomalies() {
   return (
     <div>
       {/* Metrics row */}
-      {metrics && (
-        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          {[
-            { label: 'F1 Score', value: (metrics.f1 * 100).toFixed(1) + '%', color: 'var(--low)' },
-            { label: 'Precision', value: (metrics.precision * 100).toFixed(1) + '%', color: 'var(--accent)' },
-            { label: 'Recall', value: (metrics.recall * 100).toFixed(1) + '%', color: 'var(--aws)' },
-            { label: 'True Positives', value: metrics.true_positives, color: 'var(--low)' },
-            { label: 'False Positives', value: metrics.false_positives, color: 'var(--critical)' },
-          ].map(m => (
-            <div key={m.label} className="card" style={{ padding: '12px 18px', flex: 1, minWidth: 110 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.value}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        {[
+          { label: 'F1 Score', value: (((metrics?.f1 || 0) * 100).toFixed(1)) + '%', color: 'var(--low)' },
+          { label: 'Precision', value: (((metrics?.precision || 0) * 100).toFixed(1)) + '%', color: 'var(--accent)' },
+          { label: 'Recall', value: (((metrics?.recall || 0) * 100).toFixed(1)) + '%', color: 'var(--aws)' },
+          { label: 'True Positives', value: metrics?.true_positives || 0, color: 'var(--low)' },
+          { label: 'False Positives', value: metrics?.false_positives || 0, color: 'var(--critical)' },
+        ].map(m => (
+          <div key={m.label} className="card" style={{ padding: '12px 18px', flex: 1, minWidth: 110 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.value}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{m.label}</div>
+          </div>
+        ))}
+      </div>
 
       <div className="grid-2" style={{ gap: 16, marginBottom: 20 }}>
         {/* Anomalies by type */}
-        {byType && (
-          <div className="card" style={{ padding: 20 }}>
-            <div className="card-title" style={{ marginBottom: 14 }}>Anomalies by Type</div>
-            {byType.map(t => (
-              <div key={t.type_label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, marginBottom: 3 }}>{t.type_label}</div>
-                  <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
-                    <div style={{ height: '100%', background: 'var(--gradient-purple)', borderRadius: 2, width: `${Math.min(t.count * 15, 100)}%` }} />
-                  </div>
+        <div className="card" style={{ padding: 20 }}>
+          <div className="card-title" style={{ marginBottom: 14 }}>Anomalies by Type</div>
+          {byType ? byType.map(t => (
+            <div key={t.type_label} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500, marginBottom: 3 }}>{t.type_label}</div>
+                <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2 }}>
+                  <div style={{ height: '100%', background: 'var(--gradient-blue)', borderRadius: 2, width: `${Math.min((t.count || 0) * 15, 100)}%` }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', minWidth: 24 }}>{t.count}</span>
               </div>
-            ))}
-          </div>
-        )}
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', minWidth: 24 }}>{t.count || 0}</span>
+            </div>
+          )) : (
+            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Waiting for detection engine...</div>
+          )}
+        </div>
 
         {/* Filters summary */}
         <div className="card" style={{ padding: 20 }}>
