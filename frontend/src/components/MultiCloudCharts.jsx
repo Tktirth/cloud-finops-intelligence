@@ -40,10 +40,10 @@ export function SpendTimeline() {
   const formatted = data.map(d => ({
     date: format(parseISO(d.date), 'MMM d'),
     cost: Math.round(d.cost_usd),
-  })).filter((_, i) => i % 3 === 0) // sample every 3rd day for readability
+  })) // Removed sampling for 100% fidelity
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={formatted}>
         <defs>
           <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
@@ -62,6 +62,8 @@ export function SpendTimeline() {
           axisLine={false} 
           tickLine={false} 
           dy={10}
+          interval="preserveStartEnd"
+          minTickGap={30}
         />
         <YAxis 
           tick={{ fill: 'var(--text-muted)', fontSize: 10, fontWeight: 600 }} 
@@ -79,6 +81,14 @@ export function SpendTimeline() {
           dot={false}
           style={{ filter: 'url(#glow)' }}
         />
+        <Brush 
+          dataKey="date" 
+          height={20} 
+          stroke="var(--accent)" 
+          fill="rgba(11, 99, 229, 0.05)" 
+          travellerWidth={10} 
+          gap={10}
+        />
       </AreaChart>
     </ResponsiveContainer>
   )
@@ -89,27 +99,39 @@ export function ProviderSpendChart() {
 
   if (loading || !data) return <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner" /></div>
 
-  // Aggregate by date × provider
   const byDate = {}
   data.forEach(d => {
     const key = format(parseISO(d.date), 'MMM d')
     if (!byDate[key]) byDate[key] = { date: key }
     byDate[key][d.provider] = (byDate[key][d.provider] || 0) + d.cost_usd
   })
-  const chartData = Object.values(byDate).filter((_, i) => i % 7 === 0)
+  const chartData = Object.values(byDate) // Removed weekly sampling
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={chartData} barCategoryGap="30%">
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={chartData} barCategoryGap="20%">
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-        <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <XAxis 
+          dataKey="date" 
+          tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+          axisLine={false} 
+          tickLine={false} 
+          interval="preserveStartEnd"
+          minTickGap={20}
+        />
         <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v/1000).toFixed(0)}K`} />
         <Tooltip content={<SpendTooltip />} />
         {Object.entries(PROVIDER_COLORS).map(([p, c]) => (
           <Bar key={p} dataKey={p} stackId="a" fill={c} radius={p === 'gcp' ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
         ))}
         <Legend formatter={(v) => <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v.toUpperCase()}</span>} verticalAlign="top" height={36} />
-        <Brush dataKey="date" height={25} stroke="#8B9BC8" fill="rgba(255,255,255,0.05)" />
+        <Brush 
+          dataKey="date" 
+          height={20} 
+          stroke="var(--low)" 
+          fill="rgba(0, 255, 148, 0.05)" 
+          travellerWidth={10}
+        />
       </BarChart>
     </ResponsiveContainer>
   )

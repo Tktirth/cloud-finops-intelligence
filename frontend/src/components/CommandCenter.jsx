@@ -62,25 +62,29 @@ export function LiveTicker() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: 0, height: 28, background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid var(--glass-border)', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ 
+      display: 'flex', alignItems: 'center', gap: 0, padding: 0, height: 28, 
+      background: 'rgba(0,0,0,0.6)', borderBottom: '1px solid var(--glass-border)', 
+      overflow: 'hidden', position: 'relative', width: '100%' 
+    }}>
       {/* Permanent Status Indicator */}
       <div style={{ 
-        height: '100%', padding: '0 12px', background: 'var(--bg-primary)', zIndex: 100,
-        fontSize: 9, fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', 
+        height: '100%', padding: '0 16px', background: 'var(--bg-primary)', zIndex: 100,
+        fontSize: 10, fontWeight: 900, color: 'var(--accent)', textTransform: 'uppercase', 
         letterSpacing: '0.15em', display: 'flex', alignItems: 'center', gap: 6,
-        borderRight: '1px solid var(--glass-border)', boxShadow: '4px 0 10px rgba(0,0,0,0.4)'
+        borderRight: '1px solid var(--glass-border)', boxShadow: '8px 0 16px rgba(0,0,0,0.5)'
       }}>
-        <span className="status-dot" style={{ width: 5, height: 5 }} /> 
+        <span className="status-dot" style={{ width: 6, height: 6 }} /> 
         <span style={{ whiteSpace: 'nowrap' }}>CLOUD TAPE</span>
-        <span style={{ color: 'var(--text-muted)', fontWeight: 500, opacity: 0.6 }}>// STABLE</span>
       </div>
 
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
         gap: 0, 
-        animation: 'ticker 120s linear infinite', // Slower, more presidential crawl
-        willChange: 'transform'
+        animation: 'ticker 60s linear infinite', 
+        willChange: 'transform',
+        paddingLeft: '10vw' // Buffer for the status indicator
       }}>
         {/* Triple-Buffer for ultra-seamless loop */}
         {[...tickerSlots, ...tickerSlots, ...tickerSlots].map((item, i) => (
