@@ -43,6 +43,11 @@ def normalize(df: pd.DataFrame) -> pd.DataFrame:
     if "category" not in df.columns:
         df["category"] = df["service"].map(CATEGORY_MAP).fillna("other")
 
+    # Use net_cost_usd (includes billing credits) as primary cost column
+    # Fall back to cost_usd for backward compatibility
+    if "net_cost_usd" in df.columns:
+        df["cost_usd"] = df["net_cost_usd"]
+
     df["provider_display"] = df["provider"].map(PROVIDER_DISPLAY)
 
     # Month bucket for aggregation
@@ -103,7 +108,7 @@ def get_summary_stats(df: pd.DataFrame) -> dict:
         mom_change = ((last_30["cost_usd"].sum() - prev_30["cost_usd"].sum()) /
                       prev_30["cost_usd"].sum()) * 100
 
-    return {
+    stats = {
         "total_spend_6m": round(total_spend, 2),
         "spend_last_30d": round(last_30["cost_usd"].sum(), 2),
         "mom_change_pct": round(mom_change, 2),
@@ -112,3 +117,12 @@ def get_summary_stats(df: pd.DataFrame) -> dict:
         "teams_count": df["team"].nunique(),
         "anomaly_count": df[df["is_anomaly"] == 1]["anomaly_id"].nunique(),
     }
+
+    # Pricing model breakdown (if available)
+    if "pricing_model" in df.columns:
+        pm = df.groupby("pricing_model")["cost_usd"].sum()
+        total = pm.sum()
+        if total > 0:
+            stats["pricing_mix"] = {k: round(v / total * 100, 1) for k, v in pm.items()}
+
+    return stats
